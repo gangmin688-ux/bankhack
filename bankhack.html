@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BANKHACK MASTER</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@600&display=swap');
+
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0f14;--card:#161921;--card2:#1e2230;
+  --border:#2a2f3d;--text:#e8eaf0;--muted:#6b7280;
+  --primary:#f59e0b;--accent:#3b82f6;--success:#10b981;--danger:#ef4444;--purple:#8b5cf6;
+}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+
+/* HEADER */
+.header{background:var(--card);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:100}
+.logo{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600;color:var(--primary);letter-spacing:1px}
+.config-info{font-size:11px;color:var(--muted);flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.btn-teacher{background:var(--success);color:#fff;border:none;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.btn-teacher:hover{opacity:.85}
+.btn-refresh{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:6px 10px;border-radius:6px;font-size:12px;cursor:pointer}
+.btn-refresh:hover{background:var(--border)}
+
+/* TABS */
+.tabs{display:flex;gap:3px;padding:10px 12px;background:var(--card);border-bottom:1px solid var(--border);overflow-x:auto}
+.tabs::-webkit-scrollbar{height:0}
+.tab{flex:1;min-width:52px;padding:7px 4px;border:none;background:transparent;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer;border-radius:6px;transition:.15s;font-family:inherit}
+.tab.active{background:var(--primary);color:#000}
+.tab:hover:not(.active){background:var(--card2);color:var(--text)}
+
+/* MAIN */
+.main{padding:12px;max-width:640px;margin:0 auto}
+.page{display:none}.page.active{display:block}
+
+/* CARD */
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:10px}
+.card-title{font-size:13px;font-weight:700;color:var(--primary);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+
+/* FORM */
+.row{display:flex;gap:8px;margin-bottom:8px}
+.field{flex:1;display:flex;flex-direction:column;gap:3px}
+.field label{font-size:11px;color:var(--muted)}
+.field input,.field select,.field textarea{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:8px 10px;border-radius:7px;font-size:13px;font-family:inherit;outline:none;width:100%}
+.field input:focus,.field select:focus{border-color:var(--primary)}
+.field select option{background:var(--card2)}
+.field input[readonly]{color:var(--primary);font-weight:700;font-size:15px;text-align:center;border-color:var(--primary)33}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:6px;margin-bottom:8px}
+.btn{flex:1;padding:9px 10px;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s}
+.btn:hover{opacity:.85}
+.btn-p{background:var(--primary);color:#000}
+.btn-s{background:var(--success);color:#fff}
+.btn-d{background:var(--danger);color:#fff}
+.btn-a{background:var(--accent);color:#fff}
+.btn-m{background:var(--purple);color:#fff}
+.btn-o{background:var(--card2);border:1px solid var(--border);color:var(--text)}
+
+/* SWITCH */
+.switch-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)33}
+.switch-label{font-size:13px}
+.switch{position:relative;width:44px;height:24px;cursor:pointer}
+.switch input{display:none}
+.slider{position:absolute;inset:0;background:#374151;border-radius:12px;transition:.2s}
+.slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+input:checked+.slider{background:var(--primary)}
+input:checked+.slider:before{transform:translateX(20px)}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:11px}
+.tbl th{background:var(--card2);padding:7px 6px;text-align:left;font-weight:700;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+.tbl td{padding:7px 6px;border-bottom:1px solid var(--border)44;vertical-align:middle}
+.tbl tr:hover td{background:var(--card2)88}
+.tbl-wrap{max-height:300px;overflow-y:auto;border-radius:8px;border:1px solid var(--border)}
+
+/* LOG */
+.log-item{padding:8px 10px;border-bottom:1px solid var(--border)33;display:flex;align-items:center;gap:8px}
+.log-item:last-child{border-bottom:none}
+.log-meta{flex:1;min-width:0}
+.log-name{font-size:11px;font-weight:700;color:var(--primary)}
+.log-desc{font-size:10px;color:var(--muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.log-amt{font-size:12px;font-weight:700;white-space:nowrap}
+.log-wrap{max-height:420px;overflow-y:auto}
+
+/* TX */
+.tx-item{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid var(--border)33}
+.tx-meta{flex:1;min-width:0}
+.tx-desc{font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tx-date{font-size:10px;color:var(--muted)}
+.tx-amt{font-size:12px;font-weight:700;white-space:nowrap}
+.icon-btn{background:none;border:none;cursor:pointer;padding:3px;border-radius:4px;font-size:13px;opacity:.7}
+.icon-btn:hover{opacity:1;background:var(--card2)}
+
+/* EDIT BOX */
+.edit-box{background:#1a1500;border:1px solid var(--primary)44;border-radius:8px;padding:10px;margin-bottom:8px}
+.edit-box-title{font-size:11px;font-weight:700;color:var(--primary);margin-bottom:8px}
+
+/* TOAST */
+#toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);background:#1e2230;border:1px solid var(--border);color:var(--text);padding:10px 18px;border-radius:8px;font-size:13px;font-weight:500;z-index:9999;transition:.25s;opacity:0;max-width:90vw;text-align:center;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* DIVIDER */
+.div{height:1px;background:var(--border);margin:10px 0}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="logo">🏦 BANKHACK</span>
+  <span class="config-info" id="configInfo">데이터 로딩 중...</span>
+  <a class="btn-teacher" href="https://gangmin688-ux.github.io/asdfadada/" target="_blank">🌐 교사창</a>
+  <button class="btn-refresh" onclick="loadData()">↻</button>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab(0)">학생</button>
+  <button class="tab" onclick="switchTab(1)">시장</button>
+  <button class="tab" onclick="switchTab(2)">주식</button>
+  <button class="tab" onclick="switchTab(3)">아이템</button>
+  <button class="tab" onclick="switchTab(4)">로그</button>
+  <button class="tab" onclick="switchTab(5)">세금</button>
+  <button class="tab" onclick="switchTab(6)">거래</button>
+</div>
+
+<div class="main">
+
+<!-- 학생 탭 -->
+<div class="page active" id="page0">
+  <div class="card">
+    <div class="card-title">👤 학생 관리</div>
+    <div class="row">
+      <div class="field"><label>이름</label><input id="sName" placeholder="학생 이름"></div>
+      <div class="field"><label>비밀번호</label><input id="sPw" placeholder="비밀번호"></div>
+    </div>
+    <div class="row">
+      <div class="field"><label>잔액</label><input id="sBal" type="number" placeholder="잔액"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-a" onclick="editStudent('up')">✏️ 수정</button>
+      <button class="btn btn-s" onclick="editStudent('add')">➕ 추가</button>
+      <button class="btn btn-d" onclick="editStudent('del')">🗑️ 삭제</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🔑 비밀번호 확인</div>
+    <div class="row">
+      <div class="field"><label>선택된 학생 비번</label><input id="pwDisplay" readonly placeholder="학생을 선택하세요"></div>
+      <button class="btn btn-p" style="flex:0;padding:8px 14px;align-self:flex-end" onclick="doCopy(document.getElementById('pwDisplay').value)">📋</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-m" onclick="resetAllPw()">🔑 전체 비번 1234 초기화</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">👥 학생 명단</div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>선택</th><th>이름</th><th>잔액</th><th>직업</th></tr></thead>
+        <tbody id="studentTbl"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 시장 탭 -->
+<div class="page" id="page1">
+  <div class="card">
+    <div class="card-title">🛡️ 마스터 스위치</div>
+    <div class="switch-row"><span class="switch-label">주식 거래 허용</span><label class="switch"><input type="checkbox" id="swMarket" checked><span class="slider"></span></label></div>
+    <div class="switch-row"><span class="switch-label">상점 구매 허용</span><label class="switch"><input type="checkbox" id="swShop" checked><span class="slider"></span></label></div>
+    <div class="switch-row"><span class="switch-label">학생 간 송금 허용</span><label class="switch"><input type="checkbox" id="swTrade" checked><span class="slider"></span></label></div>
+    <div class="switch-row"><span class="switch-label">랭킹 잔액 공개</span><label class="switch"><input type="checkbox" id="swRank" checked><span class="slider"></span></label></div>
+    <div class="switch-row" style="border:none"><span class="switch-label">주식 강제 개장</span><label class="switch"><input type="checkbox" id="swForce"><span class="slider"></span></label></div>
+    <div class="btn-row" style="margin-top:10px">
+      <button class="btn btn-p" onclick="saveConfig()">💾 스위치 저장</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🔑 교사 비밀번호</div>
+    <div class="row">
+      <div class="field"><label>현재 교사 비번</label><input id="teacherPwDisplay" readonly></div>
+      <button class="btn btn-s" style="flex:0;padding:8px 14px;align-self:flex-end" onclick="doCopy(document.getElementById('teacherPwDisplay').value)">📋</button>
+    </div>
+    <div class="row"><div class="field"><label>새 교사 비밀번호</label><input id="newTeacherPw" placeholder="새 비밀번호"></div></div>
+    <button class="btn btn-m" style="width:100%" onclick="saveTeacherPw()">🔑 비밀번호 변경</button>
+  </div>
+  <div class="card">
+    <div class="card-title">📈 주가 조작</div>
+    <div class="row"><div class="field"><label>종목 선택</label><select id="stockDd"></select></div></div>
+    <div class="row"><div class="field"><label>변경할 주가</label><input id="stockPrice" type="number" placeholder="주가"></div></div>
+    <div class="btn-row">
+      <button class="btn btn-p" onclick="changeStockPrice()">🎯 변경</button>
+      <button class="btn btn-o" onclick="loadData()">🔄 새로고침</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🛒 상점 물건 추가</div>
+    <div class="row">
+      <div class="field"><label>상품명</label><input id="shopName" placeholder="상품명"></div>
+      <div class="field"><label>가격</label><input id="shopPrice" type="number" placeholder="가격"></div>
+    </div>
+    <button class="btn btn-s" style="width:100%" onclick="addShopItem()">🛍️ 상점 추가</button>
+  </div>
+</div>
+
+<!-- 주식 탭 -->
+<div class="page" id="page2">
+  <div class="card">
+    <div class="card-title">📈 주식 보유 현황</div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>학생</th><th>종목</th><th>수량</th><th>조작</th></tr></thead>
+        <tbody id="stockHoldTbl"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">➕ 주식 추가 / 직접 설정</div>
+    <div class="row">
+      <div class="field"><label>학생</label><select id="shStudentDd"></select></div>
+      <div class="field"><label>종목</label><select id="shStockDd"></select></div>
+    </div>
+    <div class="row"><div class="field"><label>수량</label><input id="shQty" type="number" placeholder="수량"></div></div>
+    <div class="btn-row">
+      <button class="btn btn-s" onclick="addStock()">➕ 추가</button>
+      <button class="btn btn-p" onclick="setStock()">✏️ 직접설정</button>
+    </div>
+  </div>
+</div>
+
+<!-- 아이템 탭 -->
+<div class="page" id="page3">
+  <div class="card">
+    <div class="card-title">🎁 아이템 보유 현황</div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>학생</th><th>아이템</th><th>수량</th><th>조작</th></tr></thead>
+        <tbody id="itemHoldTbl"></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">➕ 아이템 지급</div>
+    <div class="row"><div class="field"><label>학생 선택</label><select id="ihStudentDd"></select></div></div>
+    <div class="row"><div class="field"><label>아이템 선택</label><select id="ihItemDd"></select></div></div>
+    <button class="btn btn-s" style="width:100%" onclick="addItem()">➕ 아이템 지급</button>
+  </div>
+</div>
+
+<!-- 로그 탭 -->
+<div class="page" id="page4">
+  <div class="card">
+    <div class="card-title">📜 뱅크 로그 <span style="color:var(--muted);font-weight:400;font-size:11px">(최근 40건)</span></div>
+    <div class="log-wrap" id="logList"></div>
+  </div>
+</div>
+
+<!-- 세금 탭 -->
+<div class="page" id="page5">
+  <div class="card">
+    <div class="card-title">💰 반 기금</div>
+    <div id="classFundText" style="font-size:15px;font-weight:700;color:var(--success);margin-bottom:8px">로딩 중...</div>
+    <div class="row">
+      <div class="field"><label>반 기금 직접 설정</label><input id="classFundIn" type="number" placeholder="금액"></div>
+      <button class="btn btn-s" style="flex:0;align-self:flex-end;padding:8px 12px" onclick="saveClassFund()">💾 설정</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📊 전체 학생 세금 현황</div>
+    <div class="tbl-wrap">
+      <table class="tbl">
+        <thead><tr><th>학생</th><th>이번달소득</th><th>예상세금</th><th>잔액</th><th>수정</th></tr></thead>
+        <tbody id="taxTbl"></tbody>
+      </table>
+    </div>
+    <div class="btn-row" style="margin-top:10px">
+      <button class="btn btn-d" onclick="collectTaxAll()">💸 전체 세금 징수</button>
+      <button class="btn btn-o" onclick="loadData();renderTaxTable()">🔄 새로고침</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">✏️ 예상 세금 직접 지정</div>
+    <div class="row"><div class="field"><label>학생 선택</label><select id="taxOverrideStudentDd"></select></div></div>
+    <div class="row"><div class="field"><label>예상 세금 (비우면 자동계산)</label><input id="taxOverrideIn" type="number" placeholder="금액"></div></div>
+    <button class="btn btn-a" style="width:100%" onclick="saveTaxOverride()">💾 예상 세금 저장</button>
+  </div>
+  <div class="card">
+    <div class="card-title">👤 개별 세금 징수</div>
+    <div class="row"><div class="field"><label>학생 선택</label><select id="taxStudentDd"></select></div></div>
+    <div class="row">
+      <div class="field"><label>세금 금액</label><input id="taxAmount" type="number" placeholder="금액"></div>
+      <div class="field"><label>메모</label><input id="taxDesc" placeholder="3월 세금"></div>
+    </div>
+    <button class="btn btn-p" style="width:100%" onclick="chargeTaxIndividual()">💸 세금 징수</button>
+  </div>
+  <div class="card">
+    <div class="card-title">⚙️ 세금 설정</div>
+    <div class="switch-row"><span class="switch-label">세금 활성화</span><label class="switch"><input type="checkbox" id="taxEnabledSw" checked><span class="slider"></span></label></div>
+    <div class="row" style="margin-top:10px">
+      <div class="field"><label>직업있는 학생 세율(%)</label><input id="taxRateJob" type="number" value="10"></div>
+      <div class="field"><label>직업없는 학생 세율(%)</label><input id="taxRateNoJob" type="number" value="5"></div>
+    </div>
+    <div class="row"><div class="field"><label>최소 세금</label><input id="taxMin" type="number" value="5"></div></div>
+    <button class="btn btn-m" style="width:100%" onclick="saveTaxSettings()">💾 세금 설정 저장</button>
+  </div>
+</div>
+
+<!-- 거래 탭 -->
+<div class="page" id="page6">
+  <div class="card">
+    <div class="card-title">📋 학생 거래내역 관리</div>
+    <div class="row"><div class="field"><label>학생 선택</label><select id="txStudentDd" onchange="renderTxList()"></select></div></div>
+    <div class="div"></div>
+    <div style="font-size:12px;font-weight:700;color:var(--primary);margin-bottom:8px">💰 잔액 지급/차감 + 기록</div>
+    <div class="row">
+      <div class="field"><label>금액 (+지급, -차감)</label><input id="txGiveIn" type="number" placeholder="금액"></div>
+      <div class="field"><label>메모</label><input id="txGiveDesc" placeholder="메모"></div>
+    </div>
+    <div class="row"><div class="field"><label>날짜 (비우면 오늘)</label><input id="txGiveDate" placeholder="2025. 03. 29."></div></div>
+    <div class="btn-row">
+      <button class="btn btn-s" onclick="giveAmount()">💰 지급/차감</button>
+      <button class="btn btn-a" onclick="addTxManual()">📝 기록만</button>
+      <button class="btn btn-d" onclick="deleteTxAll()">🗑️ 전체삭제</button>
+    </div>
+  </div>
+  <div class="edit-box" id="txEditBox" style="display:none">
+    <div class="edit-box-title">✏️ 항목 수정</div>
+    <div class="row">
+      <div class="field"><label>날짜</label><input id="txEditDate"></div>
+      <div class="field"><label>금액</label><input id="txEditAmt" type="number"></div>
+    </div>
+    <div class="row"><div class="field"><label>메모</label><input id="txEditDesc"></div></div>
+    <div class="btn-row">
+      <button class="btn btn-p" onclick="saveEditTx()">💾 저장</button>
+      <button class="btn btn-o" onclick="cancelEditTx()">취소</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">📜 거래내역</div>
+    <div class="log-wrap" id="txList"></div>
+  </div>
+</div>
+
+</div><!-- /main -->
+
+<div id="toast"></div>
+
+<script>
+// ==================== FIREBASE REST API (SDK 없음) ====================
+const PROJECT_ID = 'bank-6a725';
+const API_KEY    = 'AIzaSyCD3zYroBlO4KTj5oOn0VFuL1sOuD-SDsU';
+const BASE = `https://firestore.googleapis.com/v1/projects/${PROJECT_ID}/databases/(default)/documents`;
+
+function fsVal(v){
+  if(v===null||v===undefined) return {nullValue:null};
+  if(typeof v==='boolean') return {booleanValue:v};
+  if(typeof v==='number') return Number.isInteger(v)?{integerValue:String(v)}:{doubleValue:v};
+  if(typeof v==='string') return {stringValue:v};
+  if(Array.isArray(v)) return {arrayValue:{values:v.map(fsVal)}};
+  if(typeof v==='object') return {mapValue:{fields:Object.fromEntries(Object.entries(v).map(([k,vv])=>[k,fsVal(vv)]))}};
+  return {stringValue:String(v)};
+}
+function pyVal(v){
+  if(!v) return null;
+  if('nullValue' in v) return null;
+  if('booleanValue' in v) return v.booleanValue;
+  if('integerValue' in v) return parseInt(v.integerValue);
+  if('doubleValue' in v) return v.doubleValue;
+  if('stringValue' in v) return v.stringValue;
+  if('arrayValue' in v) return (v.arrayValue.values||[]).map(pyVal);
+  if('mapValue' in v) return Object.fromEntries(Object.entries(v.mapValue.fields||{}).map(([k,vv])=>[k,pyVal(vv)]));
+  return null;
+}
+function docToDict(doc){
+  const d=Object.fromEntries(Object.entries(doc.fields||{}).map(([k,v])=>[k,pyVal(v)]));
+  d._id=(doc.name||'').split('/').pop();
+  return d;
+}
+async function fbGet(col,id){
+  const r=await fetch(`${BASE}/${col}/${id}?key=${API_KEY}`);
+  if(!r.ok) return null;
+  return docToDict(await r.json());
+}
+async function fbGetAll(col){
+  const r=await fetch(`${BASE}/${col}?key=${API_KEY}`);
+  if(!r.ok) return [];
+  const data=await r.json();
+  return (data.documents||[]).map(docToDict);
+}
+async function fbSet(col,id,data){
+  const fields=Object.fromEntries(Object.entries(data).map(([k,v])=>[k,fsVal(v)]));
+  const mask=Object.keys(data).map(k=>`updateMask.fieldPaths=${k}`).join('&');
+  await fetch(`${BASE}/${col}/${id}?key=${API_KEY}&${mask}`,{
+    method:'PATCH',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({fields})
+  });
+}
+async function fbSetFull(col,id,data){
+  const fields=Object.fromEntries(Object.entries(data).map(([k,v])=>[k,fsVal(v)]));
+  await fetch(`${BASE}/${col}/${id}?key=${API_KEY}`,{
+    method:'PATCH',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({fields})
+  });
+}
+async function fbDel(col,id){
+  await fetch(`${BASE}/${col}/${id}?key=${API_KEY}`,{method:'DELETE'});
+}
+
+
+
+// ==================== STATE ====================
+const COMPANY_NAMES={KEC:'한국전자',SKF:'스카이푸드',GNB:'그린에너지',MDC:'메디케어',TRN:'트랜스물류',SNM:'선미패션',DGM:'디지털미디어',KHB:'코리아홈빌드',NXG:'넥스트게임',AIB:'AI뱅크'};
+let _students=[],_storeItems=[],_jobMap={},_stocks=[];
+let _editingTx={orig:null,student:null};
+
+// ==================== TOAST ====================
+let _toastTimer=null;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer=setTimeout(()=>t.classList.remove('show'),2500);
+}
+function doCopy(v){if(!v){toast('❌ 값이 없습니다');return;}navigator.clipboard.writeText(String(v)).then(()=>toast('📋 복사: '+v)).catch(()=>toast('비번: '+v))}
+
+// ==================== TABS ====================
+function switchTab(idx){
+  document.querySelectorAll('.page').forEach((p,i)=>p.classList.toggle('active',i===idx));
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',i===idx));
+  if(idx===5){loadData();renderTaxTable();}
+  if(idx===6){renderTxList();}
+}
+
+// ==================== LOAD DATA ====================
+async function loadData(){
+  try{
+    const conf=await fbGet('config','1')||{};
+    const bank=conf.bank_name||'교실은행',grade=conf.grade||'6',cls=conf.class_num||'3';
+    document.getElementById('configInfo').textContent=`🏦 ${grade}-${cls}반 ${bank} | PW: ${conf.teacher_pw||''}`;
+    document.getElementById('swMarket').checked=conf.allow_stock!==false;
+    document.getElementById('swShop').checked=conf.allow_store!==false;
+    document.getElementById('swTrade').checked=conf.allow_transfer!==false;
+    document.getElementById('swRank').checked=conf.show_balance!==false;
+    document.getElementById('swForce').checked=!!conf.force_market;
+    document.getElementById('teacherPwDisplay').value=conf.teacher_pw||'';
+    const taxCfg=conf.tax_settings||conf.tax||{};
+    document.getElementById('taxEnabledSw').checked=taxCfg.enabled!==false;
+    document.getElementById('taxRateJob').value=taxCfg.withJobRate||10;
+    document.getElementById('taxRateNoJob').value=taxCfg.noJobRate||5;
+    document.getElementById('taxMin').value=taxCfg.minAmount||5;
+    const fund=parseInt(conf.class_fund||0);
+    document.getElementById('classFundText').textContent=`💰 반 기금: ${fund.toLocaleString()}원`;
+  }catch(e){console.error('config 로딩 실패',e)}
+
+  try{
+    const jobs=await fbGetAll('jobs');
+    _jobMap={};
+    jobs.forEach(j=>{_jobMap[String(j.id||j._id)]=j.name});
+  }catch(e){}
+
+  try{
+    _stocks=await fbGetAll('stocks');
+    _stocks.sort((a,b)=>(a.code||a._id).localeCompare(b.code||b._id));
+    const stockDd=document.getElementById('stockDd');
+    const shStockDd=document.getElementById('shStockDd');
+    stockDd.innerHTML='';shStockDd.innerHTML='';
+    _stocks.forEach(s=>{
+      const code=s.code||s._id;
+      const nm=COMPANY_NAMES[code]||code;
+      stockDd.innerHTML+=`<option value="${code}">${nm} (${code}) ${parseInt(s.price||0).toLocaleString()}원</option>`;
+      shStockDd.innerHTML+=`<option value="${code}">${nm} (${code})</option>`;
+    });
+  }catch(e){}
+
+  try{
+    _storeItems=await fbGetAll('store_items');
+    _storeItems.sort((a,b)=>parseInt(a.id||0)-parseInt(b.id||0));
+    const ihItemDd=document.getElementById('ihItemDd');
+    ihItemDd.innerHTML='';
+    _storeItems.forEach(it=>{
+      ihItemDd.innerHTML+=`<option value="${it.id||it._id}">${it.emoji||''} ${it.name||'?'} (${parseInt(it.price||0).toLocaleString()}원)</option>`;
+    });
+  }catch(e){}
+
+  try{
+    _students=await fbGetAll('students');
+    _students.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+
+    // 학생 테이블
+    const tbl=document.getElementById('studentTbl');tbl.innerHTML='';
+    _students.forEach(s=>{
+      const bal=parseInt(s.balance||0);
+      const jobId=String(s.job_id||s.jobId||'');
+      const jobNm=jobId&&_jobMap[jobId]?_jobMap[jobId]:'-';
+      tbl.innerHTML+=`<tr>
+        <td><button class="btn btn-o" style="padding:3px 8px;font-size:11px" onclick='fillStudent(${JSON.stringify(s._id)})'>선택</button></td>
+        <td>${s.name||''}</td>
+        <td>${bal.toLocaleString()}</td>
+        <td>${jobNm}</td>
+      </tr>`;
+    });
+
+    // 드롭다운 동기화
+    const opts=_students.map(s=>`<option value="${s._id}">${s.name||''}</option>`).join('');
+    ['shStudentDd','ihStudentDd','taxStudentDd','taxOverrideStudentDd','txStudentDd'].forEach(id=>{
+      document.getElementById(id).innerHTML=opts;
+    });
+
+    // 주식 보유
+    const shTbl=document.getElementById('stockHoldTbl');shTbl.innerHTML='';
+    let hasStock=false;
+    _students.forEach(s=>{
+      const portfolio=s.portfolio||{};
+      Object.entries(portfolio).forEach(([code,entry])=>{
+        const qty=typeof entry==='object'?parseInt(entry.qty||0):parseInt(entry||0);
+        if(qty>0){
+          hasStock=true;
+          const nm=COMPANY_NAMES[code]||code;
+          shTbl.innerHTML+=`<tr>
+            <td>${s.name||''}</td>
+            <td>${nm}<br><span style="color:var(--muted);font-size:9px">${code}</span></td>
+            <td>${qty}</td>
+            <td><button class="btn btn-d" style="padding:3px 8px;font-size:11px" onclick='resetStock("${s._id}","${s.name}","${code}")'>초기화</button></td>
+          </tr>`;
+        }
+      });
+    });
+    if(!hasStock)shTbl.innerHTML='<tr><td colspan="4" style="color:var(--muted);padding:12px;text-align:center">보유 주식 없음</td></tr>';
+
+    // 아이템 보유
+    const itTbl=document.getElementById('itemHoldTbl');itTbl.innerHTML='';
+    let hasItem=false;
+    _students.forEach(s=>{
+      const items=s.items||[];
+      const grouped={};
+      items.forEach(it=>{if(it&&it.name){grouped[it.name]=(grouped[it.name]||{item:it,count:0});grouped[it.name].count++;}});
+      Object.entries(grouped).forEach(([nm,v])=>{
+        hasItem=true;
+        itTbl.innerHTML+=`<tr>
+          <td>${s.name||''}</td>
+          <td>${v.item.emoji||''} ${nm}</td>
+          <td>${v.count}</td>
+          <td><button class="btn btn-d" style="padding:3px 8px;font-size:11px" onclick='removeItem("${s._id}","${s.name}","${nm}")'>삭제</button></td>
+        </tr>`;
+      });
+    });
+    if(!hasItem)itTbl.innerHTML='<tr><td colspan="4" style="color:var(--muted);padding:12px;text-align:center">보유 아이템 없음</td></tr>';
+
+    // 로그
+    const allTxs=[];
+    _students.forEach(s=>{(s.transactions||[]).forEach(tx=>{if(tx)allTxs.push({name:s.name,...tx});})});
+    allTxs.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    const logEl=document.getElementById('logList');logEl.innerHTML='';
+    allTxs.slice(0,40).forEach(tx=>{
+      const amt=parseInt(tx.amount||0);
+      logEl.innerHTML+=`<div class="log-item">
+        <div class="log-meta">
+          <div class="log-name">${tx.date||''} · ${tx.name||''}</div>
+          <div class="log-desc">➡️ ${tx.desc||''}</div>
+        </div>
+        <div class="log-amt" style="color:${amt>=0?'#60a5fa':'#f87171'}">${amt>=0?'+':''}${amt.toLocaleString()}원</div>
+      </div>`;
+    });
+  }catch(e){console.error('학생 로딩 실패',e)}
+}
+
+// ==================== STUDENT ====================
+function fillStudent(sid){
+  const s=_students.find(x=>x._id===sid);if(!s)return;
+  document.getElementById('sName').value=s.name||'';
+  document.getElementById('sPw').value=s.pw||'';
+  document.getElementById('sBal').value=parseInt(s.balance||0);
+  document.getElementById('pwDisplay').value=s.pw||'';
+}
+async function editStudent(mode){
+  const name=document.getElementById('sName').value.trim();
+  if(!name){toast('❌ 이름을 입력하세요');return;}
+  const pw=document.getElementById('sPw').value;
+  const bal=parseInt(document.getElementById('sBal').value||0);
+  if(mode==='add'){
+    const ids=_students.map(s=>parseInt(s.id||0));
+    const newId=ids.length?Math.max(...ids)+1:1;
+    await fbSetFull('students',String(newId),{id:newId,name,pw,balance:bal,transactions:[],portfolio:{},items:[],earned:bal,spent:0,job_id:null});
+    toast(`✅ ${name} 추가 완료`);
+  }else{
+    const t=_students.find(s=>s.name===name);if(!t){toast(`❌ '${name}' 학생 없음`);return;}
+    if(mode==='up'){const u={balance:bal};if(pw)u.pw=pw;await fbSet('students',t._id,u);toast(`✅ ${name} 수정 완료`);}
+    if(mode==='del'){await fbDel('students',t._id);toast(`🗑️ ${name} 삭제 완료`);}
+  }
+  loadData();
+}
+async function resetAllPw(){
+  for(const s of _students)await fbSet('students',s._id,{pw:'1234'});
+  toast('🔑 전체 비번 1234 초기화!');loadData();
+}
+
+// ==================== CONFIG ====================
+async function saveConfig(){
+  await fbSet('config','1',{
+    allow_stock:document.getElementById('swMarket').checked,
+    allow_store:document.getElementById('swShop').checked,
+    allow_transfer:document.getElementById('swTrade').checked,
+    show_balance:document.getElementById('swRank').checked,
+    force_market:document.getElementById('swForce').checked,
+  });toast('⚙️ 설정 저장 완료!');
+}
+async function saveTeacherPw(){
+  const pw=document.getElementById('newTeacherPw').value.trim();
+  if(!pw){toast('❌ 새 비밀번호 입력하세요');return;}
+  await fbSet('config','1',{teacher_pw:pw});
+  toast('🔑 교사 비밀번호 변경 완료!');
+  document.getElementById('newTeacherPw').value='';loadData();
+}
+
+// ==================== STOCK ====================
+async function changeStockPrice(){
+  const code=document.getElementById('stockDd').value;
+  const price=parseInt(document.getElementById('stockPrice').value);
+  if(!code){toast('❌ 종목 선택하세요');return;}
+  if(!price){toast('❌ 주가 입력하세요');return;}
+  await fbSet('stocks',code,{price});
+  toast(`📈 ${COMPANY_NAMES[code]||code} → ${price.toLocaleString()}원!`);
+  document.getElementById('stockPrice').value='';loadData();
+}
+function getPtfQty(entry){return typeof entry==='object'?parseInt(entry.qty||0):parseInt(entry||0)}
+async function resetStock(sid,sname,code){
+  const t=_students.find(s=>s._id===sid);if(!t)return;
+  const portfolio={...t.portfolio||{}};
+  const entry=portfolio[code];
+  portfolio[code]=typeof entry==='object'?{...entry,qty:0}:0;
+  await fbSet('students',sid,{portfolio});toast(`✅ ${sname} ${code} 초기화!`);loadData();
+}
+async function updateStockQty(sid,code,qty,mode){
+  const t=_students.find(s=>s._id===sid);if(!t){toast('❌ 학생 없음');return false;}
+  const portfolio={...t.portfolio||{}};
+  const entry=portfolio[code];const cur=getPtfQty(entry);
+  const newQty=mode==='add'?cur+qty:qty;
+  portfolio[code]=typeof entry==='object'?{...entry,qty:newQty}:newQty;
+  await fbSet('students',sid,{portfolio});return true;
+}
+async function addStock(){
+  const sid=document.getElementById('shStudentDd').value;
+  const code=document.getElementById('shStockDd').value;
+  const qty=parseInt(document.getElementById('shQty').value||0);
+  if(!sid||!code||!qty){toast('❌ 학생/종목/수량 모두 입력');return;}
+  if(await updateStockQty(sid,code,qty,'add')){toast(`✅ ${code} +${qty}주!`);document.getElementById('shQty').value='';loadData();}
+}
+async function setStock(){
+  const sid=document.getElementById('shStudentDd').value;
+  const code=document.getElementById('shStockDd').value;
+  const qty=parseInt(document.getElementById('shQty').value||0);
+  if(!sid||!code){toast('❌ 학생/종목 선택');return;}
+  if(await updateStockQty(sid,code,qty,'set')){toast(`✅ ${code} → ${qty}주!`);document.getElementById('shQty').value='';loadData();}
+}
+
+// ==================== ITEM ====================
+async function removeItem(sid,sname,itemName){
+  const t=_students.find(s=>s._id===sid);if(!t)return;
+  const newItems=(t.items||[]).filter(i=>i.name!==itemName);
+  await fbSet('students',sid,{items:newItems});toast(`✅ ${sname} [${itemName}] 삭제!`);loadData();
+}
+async function addItem(){
+  const sid=document.getElementById('ihStudentDd').value;
+  const itemId=document.getElementById('ihItemDd').value;
+  if(!sid){toast('❌ 학생 선택하세요');return;}
+  const item=_storeItems.find(i=>String(i.id||i._id)===itemId);
+  if(!item){toast('❌ 아이템 정보 없음');return;}
+  const t=_students.find(s=>s._id===sid);if(!t)return;
+  const newItems=[...(t.items||[]),{id:item.id||item._id,name:item.name,emoji:item.emoji||'🎁',price:item.price||0}];
+  await fbSet('students',sid,{items:newItems});
+  toast(`✅ ${t.name}에게 ${item.emoji||'🎁'} ${item.name} 추가!`);loadData();
+}
+
+// ==================== SHOP ====================
+async function addShopItem(){
+  const name=document.getElementById('shopName').value.trim();
+  const price=parseInt(document.getElementById('shopPrice').value||0);
+  if(!name){toast('❌ 상품명 입력하세요');return;}
+  const ids=_storeItems.map(i=>parseInt(i.id||0));
+  const newId=ids.length?Math.max(...ids)+1:1;
+  await fbSetFull('store_items',String(newId),{id:newId,name,emoji:'🛍️',price,stock:10,description:''});
+  toast(`🛒 '${name}' 추가!`);document.getElementById('shopName').value='';document.getElementById('shopPrice').value='';loadData();
+}
+
+// ==================== TAX ====================
+async function renderTaxTable(){
+  const now=new Date();const yy=now.getFullYear(),mm=now.getMonth()+1;
+  const conf=await fbGet('config','1')||{};
+  const taxCfg=conf.tax_settings||conf.tax||{};
+  const rateJob=parseFloat(taxCfg.withJobRate||10);
+  const rateNo=parseFloat(taxCfg.noJobRate||5);
+  const minAmt=parseInt(taxCfg.minAmount||5);
+  const enabled=taxCfg.enabled!==false;
+  const fund=parseInt(conf.class_fund||0);
+  document.getElementById('classFundText').textContent=`💰 반 기금: ${fund.toLocaleString()}원`;
+
+  const stus=await fbGetAll('students');
+  stus.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+  const tbl=document.getElementById('taxTbl');tbl.innerHTML='';
+  stus.forEach(s=>{
+    const bal=parseInt(s.balance||0);
+    let income=0;
+    (s.transactions||[]).forEach(tx=>{
+      if(!tx||parseInt(tx.amount||0)<=0)return;
+      const raw=(tx.date||'').replace(/\s/g,'').split('.');
+      try{if(parseInt(raw[0])===yy&&parseInt(raw[1])===mm)income+=parseInt(tx.amount);}catch(e){}
+    });
+    const jobId=String(s.job_id||s.jobId||'');
+    const hasJob=!!(jobId&&_jobMap[jobId]);
+    const rate=hasJob?rateJob:rateNo;
+    const estTax=enabled?Math.max(minAmt,Math.floor(income*rate/100)):0;
+    const override=s.tax_override;
+    const displayTax=override!=null?parseInt(override):estTax;
+    const isOverride=override!=null;
+    tbl.innerHTML+=`<tr>
+      <td>${s.name||''}</td>
+      <td>${income.toLocaleString()}</td>
+      <td style="color:${isOverride?'#f59e0b':displayTax>0?'#f87171':'#6b7280'}">${displayTax.toLocaleString()}${isOverride?'✏️':''}</td>
+      <td>${bal.toLocaleString()}</td>
+      <td><button class="btn btn-o" style="padding:3px 8px;font-size:10px" onclick='fillTaxOverride("${s._id}",${displayTax})'>수정</button></td>
+    </tr>`;
+  });
+}
+function fillTaxOverride(sid,cur){
+  document.getElementById('taxOverrideStudentDd').value=sid;
+  document.getElementById('taxOverrideIn').value=cur;
+}
+async function saveTaxOverride(){
+  const sid=document.getElementById('taxOverrideStudentDd').value;
+  if(!sid){toast('❌ 학생 선택하세요');return;}
+  const val=document.getElementById('taxOverrideIn').value.trim();
+  if(val===''){await fbSet('students',sid,{tax_override:null});toast('✅ 자동계산 복귀!');}
+  else{const t=parseInt(val);await fbSet('students',sid,{tax_override:t});const s=_students.find(x=>x._id===sid);toast(`✅ ${s?.name||''} 예상 세금 → ${t.toLocaleString()}원`);}
+  document.getElementById('taxOverrideIn').value='';renderTaxTable();
+}
+async function collectTaxAll(){
+  const now=new Date();const yy=now.getFullYear(),mm=now.getMonth()+1;
+  const monthKey=`${yy}-${String(mm).padStart(2,'0')}`;
+  const conf=await fbGet('config','1')||{};
+  const taxCfg=conf.tax_settings||conf.tax||{};
+  if(taxCfg.lastPaidMonth===monthKey){toast('⚠️ 이미 이번 달 세금이 징수됐습니다');return;}
+  const rateJob=parseFloat(taxCfg.withJobRate||10);
+  const rateNo=parseFloat(taxCfg.noJobRate||5);
+  const minAmt=parseInt(taxCfg.minAmount||5);
+  let total=0,count=0;
+  for(const s of _students){
+    const bal=parseInt(s.balance||0);
+    let income=0;
+    (s.transactions||[]).forEach(tx=>{
+      if(!tx||parseInt(tx.amount||0)<=0)return;
+      const raw=(tx.date||'').replace(/\s/g,'').split('.');
+      try{if(parseInt(raw[0])===yy&&parseInt(raw[1])===mm)income+=parseInt(tx.amount);}catch(e){}
+    });
+    const jobId=String(s.job_id||s.jobId||'');
+    const hasJob=!!(jobId&&_jobMap[jobId]);
+    const rate=hasJob?rateJob:rateNo;
+    const auto=Math.max(minAmt,Math.floor(income*rate/100));
+    const override=s.tax_override;
+    const amt=override!=null?parseInt(override):auto;
+    if(amt<=0||bal<=0)continue;
+    const actual=Math.min(amt,bal);
+    const newBal=bal-actual;
+    const newTxs=[...(s.transactions||[]),{amount:-actual,desc:`💸 세금 납부 (${monthKey}) -${actual}코인`,date:now.toLocaleDateString('ko-KR').replace(/\s/g,'')}];
+    await fbSet('students',s._id,{balance:newBal,transactions:newTxs});
+    total+=actual;count++;
+  }
+  const newFund=parseInt(conf.class_fund||0)+total;
+  taxCfg.lastPaidMonth=monthKey;
+  await fbSet('config','1',{class_fund:newFund,tax_settings:taxCfg});
+  toast(`💸 세금 징수 완료! ${count}명 / 반 기금 +${total.toLocaleString()}원`);
+  loadData();renderTaxTable();
+}
+async function chargeTaxIndividual(){
+  const sid=document.getElementById('taxStudentDd').value;
+  if(!sid){toast('❌ 학생 선택하세요');return;}
+  const amt=parseInt(document.getElementById('taxAmount').value||0);
+  if(!amt){toast('❌ 금액 입력하세요');return;}
+  const desc=document.getElementById('taxDesc').value.trim()||'💸 세금 징수';
+  const t=_students.find(s=>s._id===sid);if(!t)return;
+  const bal=parseInt(t.balance||0);
+  const actual=Math.min(amt,bal);
+  const newBal=bal-actual;
+  const now=new Date();
+  const newTxs=[...(t.transactions||[]),{amount:-actual,desc:`💸 ${desc} -${actual}코인`,date:now.toLocaleDateString('ko-KR')}];
+  await fbSet('students',sid,{balance:newBal,transactions:newTxs});
+  toast(`✅ ${t.name} 세금 ${actual.toLocaleString()}원 징수!`);
+  document.getElementById('taxAmount').value='';document.getElementById('taxDesc').value='';
+  loadData();renderTaxTable();
+}
+async function saveClassFund(){
+  const val=parseInt(document.getElementById('classFundIn').value||0);
+  if(val<0){toast('❌ 0 이상 입력하세요');return;}
+  await fbSet('config','1',{class_fund:val});
+  document.getElementById('classFundText').textContent=`💰 반 기금: ${val.toLocaleString()}원`;
+  document.getElementById('classFundIn').value='';
+  toast(`✅ 반 기금 → ${val.toLocaleString()}원!`);
+}
+async function saveTaxSettings(){
+  const conf=await fbGet('config','1')||{};
+  const taxCfg=conf.tax_settings||conf.tax||{};
+  Object.assign(taxCfg,{
+    enabled:document.getElementById('taxEnabledSw').checked,
+    withJobRate:parseInt(document.getElementById('taxRateJob').value)||10,
+    noJobRate:parseInt(document.getElementById('taxRateNoJob').value)||5,
+    minAmount:parseInt(document.getElementById('taxMin').value)||5,
+  });
+  await fbSet('config','1',{tax_settings:taxCfg});
+  toast('⚙️ 세금 설정 저장 완료!');renderTaxTable();
+}
+
+// ==================== TX ====================
+async function renderTxList(){
+  const sid=document.getElementById('txStudentDd').value;if(!sid)return;
+  const t=await fbGet('students',sid);if(!t)return;
+  const txs=[...(t.transactions||[])].filter(x=>x).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  // store updated student in memory for edits
+  const cached=_students.find(s=>s._id===sid);
+  if(cached){cached.transactions=t.transactions;cached.balance=t.balance;}
+  const el=document.getElementById('txList');el.innerHTML='';
+  if(!txs.length){el.innerHTML='<div style="padding:16px;color:var(--muted);text-align:center">거래 내역 없음</div>';return;}
+  txs.forEach((tx,i)=>{
+    const amt=parseInt(tx.amount||0);
+    el.innerHTML+=`<div class="tx-item">
+      <div class="tx-meta">
+        <div class="tx-desc">${tx.desc||''}</div>
+        <div class="tx-date">${tx.date||''}</div>
+      </div>
+      <div class="tx-amt" style="color:${amt>=0?'#60a5fa':'#f87171'}">${amt>=0?'+':''}${amt.toLocaleString()}</div>
+      <button class="icon-btn" onclick='startEditTx("${sid}",${i})' title="수정">✏️</button>
+      <button class="icon-btn" onclick='deleteTxEntry("${sid}",${i})' title="삭제">🗑️</button>
+    </div>`;
+  });
+  // store sorted for index access
+  window._txSorted=txs;window._txSid=sid;
+}
+function startEditTx(sid,idx){
+  const tx=window._txSorted[idx];if(!tx)return;
+  _editingTx={idx,sid};
+  document.getElementById('txEditDate').value=tx.date||'';
+  document.getElementById('txEditAmt').value=tx.amount||'';
+  document.getElementById('txEditDesc').value=tx.desc||'';
+  document.getElementById('txEditBox').style.display='block';
+}
+async function saveEditTx(){
+  const {idx,sid}=_editingTx;if(idx==null){toast('❌ 수정할 항목 없음');return;}
+  const orig=window._txSorted[idx];
+  const t=await fbGet('students',sid);if(!t)return;
+  let replaced=false;
+  const newTxs=(t.transactions||[]).map(tx=>{
+    if(!replaced&&tx.amount==orig.amount&&tx.desc==orig.desc&&tx.date==orig.date){
+      replaced=true;
+      return{amount:parseInt(document.getElementById('txEditAmt').value),desc:document.getElementById('txEditDesc').value.trim(),date:document.getElementById('txEditDate').value.trim()};
+    }return tx;
+  });
+  await fbSet('students',sid,{transactions:newTxs});
+  cancelEditTx();toast('✅ 거래내역 수정 완료!');renderTxList();
+}
+function cancelEditTx(){_editingTx={};document.getElementById('txEditBox').style.display='none';}
+async function deleteTxEntry(sid,idx){
+  const orig=window._txSorted[idx];
+  const t=await fbGet('students',sid);if(!t)return;
+  let removed=false;
+  const newTxs=(t.transactions||[]).filter(tx=>{
+    if(!removed&&tx.amount==orig.amount&&tx.desc==orig.desc&&tx.date==orig.date){removed=true;return false;}return true;
+  });
+  await fbSet('students',sid,{transactions:newTxs});toast('🗑️ 항목 삭제!');renderTxList();
+}
+async function deleteTxAll(){
+  const sid=document.getElementById('txStudentDd').value;if(!sid){toast('❌ 학생 선택하세요');return;}
+  const s=_students.find(x=>x._id===sid);
+  if(!confirm(`${s?.name||''}의 거래내역을 전부 삭제할까요?`))return;
+  await fbSet('students',sid,{transactions:[]});toast('🗑️ 전체 삭제!');renderTxList();
+}
+async function giveAmount(){
+  const sid=document.getElementById('txStudentDd').value;if(!sid){toast('❌ 학생 선택하세요');return;}
+  const amt=parseInt(document.getElementById('txGiveIn').value||0);if(!amt){toast('❌ 금액 입력하세요');return;}
+  const desc=document.getElementById('txGiveDesc').value.trim()||(amt>0?'💰 교사 지급':'💸 교사 차감');
+  const date=document.getElementById('txGiveDate').value.trim()||new Date().toLocaleDateString('ko-KR');
+  const t=_students.find(s=>s._id===sid);if(!t)return;
+  let newBal=Math.max(0,parseInt(t.balance||0)+amt);
+  const newTxs=[...(t.transactions||[]),{amount:amt,desc,date}];
+  await fbSet('students',sid,{balance:newBal,transactions:newTxs});
+  toast(`✅ ${t.name} ${amt>0?'지급':'차감'} ${Math.abs(amt).toLocaleString()}원!`);
+  ['txGiveIn','txGiveDesc','txGiveDate'].forEach(id=>document.getElementById(id).value='');
+  loadData();renderTxList();
+}
+async function addTxManual(){
+  const sid=document.getElementById('txStudentDd').value;if(!sid){toast('❌ 학생 선택하세요');return;}
+  const amt=parseInt(document.getElementById('txGiveIn').value||0);
+  const desc=document.getElementById('txGiveDesc').value.trim();
+  if(!amt){toast('❌ 금액 입력하세요');return;}if(!desc){toast('❌ 메모 입력하세요');return;}
+  const date=document.getElementById('txGiveDate').value.trim()||new Date().toLocaleDateString('ko-KR');
+  const t=_students.find(s=>s._id===sid);if(!t)return;
+  const newTxs=[...(t.transactions||[]),{amount:amt,desc,date}];
+  await fbSet('students',sid,{transactions:newTxs});
+  toast('✅ 거래내역 추가! (잔액 변경 없음)');
+  ['txGiveIn','txGiveDesc','txGiveDate'].forEach(id=>document.getElementById(id).value='');
+  renderTxList();
+}
+
+// ==================== BOOT ====================
+loadData();
+
+// ==================== BOOT ====================
+loadData();
+</script>
+</body>
+</html>
