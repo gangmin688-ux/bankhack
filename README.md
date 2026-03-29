@@ -1,2 +1,0 @@
-# bankhack
-63bankhack
